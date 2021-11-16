@@ -6,7 +6,7 @@ A property `time_since_eventA` will be added to `eventB`, with time measured in 
 
 ## Example Usage
 
-![](readme-assets/avg-time.png)
+![](https://github.com/PostHog/event-sequence-timer-plugin/raw/main/readme-assets/avg-time.png)
 
 ## Config
 
