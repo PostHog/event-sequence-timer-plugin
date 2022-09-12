@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals'
-import { extractEventsToTrack } from '../index'
+import { extractEventsToTrack } from './index'
 
 describe('correctly matches and extracts events', () => {
     test('correctly extracts single pair', () => {
