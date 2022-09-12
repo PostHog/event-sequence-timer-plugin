@@ -1,23 +1,33 @@
-function setupPlugin({ config, global }) {
-    const events = extractEventsToTrack(config.eventsToTrack)
+import { Plugin } from '@posthog/plugin-scaffold'
 
-    if (config.eventsToTrack.includes(' ')) {
-        throw new Error('No spaces allowed in events list.')
+type EventSequencePlugin = Plugin<{
+    global: {
+        eventsToTrack: Record<string, Set<string>>
+        firstStepEvents: Set<string>
     }
+    config: {
+        eventsToTrack: string
+        updateTimestamp: 'Yes' | 'No'
+    }
+}>
 
+export const setupPlugin: EventSequencePlugin['setupPlugin'] = ({ config, global }) => {
     try {
-        let eventsToTrack = {}
-        let firstStepEvents = new Set()
-        const eventSets = config.eventsToTrack.replace(/\),/g, ')|').split('|')
-        for (let eventSet of eventSets) {
-            const [eventA, eventB] = eventSet.slice(1, eventSet.length - 1).split(',')
-            firstStepEvents.add(eventA)
-            if (eventsToTrack[eventB]) {
-                eventsToTrack[eventB].add(eventA)
+        const eventPairs = extractEventsToTrack(config.eventsToTrack)
+
+        let eventsToTrack: Record<string, Set<string>> = {}
+        let firstStepEvents = new Set<string>()
+
+        eventPairs.forEach(([first, second]) => {
+            firstStepEvents.add(first)
+
+            if (eventsToTrack[second]) {
+                eventsToTrack[second].add(first)
             } else {
-                eventsToTrack[eventB] = new Set([eventA])
+                eventsToTrack[second] = new Set([first])
             }
-        }
+        })
+
         global.eventsToTrack = eventsToTrack
         global.firstStepEvents = firstStepEvents
     } catch {
@@ -39,31 +49,32 @@ export function extractEventsToTrack(eventsToTrack: string): [string, string][] 
     })
 }
 
-async function processEvent(event, { config, global, storage }) {
+export const processEvent: EventSequencePlugin['processEvent'] = async (event, { config, global, storage }) => {
     const timestamp = new Date(
-        event.timestamp ||
-            event.data?.timestamp ||
-            event.properties?.timestamp ||
-            event.now ||
-            event.sent_at ||
-            event.properties?.['$time']
+        event.timestamp || event.properties?.timestamp || event.now || event.sent_at || event.properties?.['$time']
     ).getTime()
+
     if (timestamp) {
         if (global.firstStepEvents.has(event.event)) {
-            const existingTimestamp = await storage.get(`${event.event}_${event.distinct_id}`)
+            const existingTimestamp = await storage.get(`${event.event}_${event.distinct_id}`, null)
+
             if (!existingTimestamp || (existingTimestamp && config.updateTimestamp === 'Yes')) {
                 await storage.set(`${event.event}_${event.distinct_id}`, timestamp)
             }
         }
+
         if (global.eventsToTrack[event.event]) {
             for (let eventA of Array.from(global.eventsToTrack[event.event])) {
-                const storedTimestamp = await storage.get(`${eventA}_${event.distinct_id}`)
+                const storedTimestamp = await storage.get(`${eventA}_${event.distinct_id}`, null)
+                const propertyName = `time_since_${eventA.replace(' ', '_')}`
+
                 if (storedTimestamp) {
-                    event.properties[`time_since_${eventA}`] = timestamp - Number(storedTimestamp)
+                    event.properties[propertyName] = timestamp - Number(storedTimestamp)
                 }
             }
         }
     }
+
     event.properties['working'] = 'working'
     return event
 }
