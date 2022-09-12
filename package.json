@@ -1,6 +1,6 @@
 {
     "name": "event-sequence-timer-plugin",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Time the time taken for a user to perform Event B after performing Event A.",
     "main": "index.js",
     "repository": {
