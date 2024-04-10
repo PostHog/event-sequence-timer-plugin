@@ -1,5 +1,7 @@
 # Event Sequence Timer Plugin
 
+This plugin is deprecated, it will be skipped in `process_persons=false` mode.
+
 Time the time taken for a user to perform Event B after performing Event A.
 
 A property `time_since_eventA` will be added to `eventB`, with time measured in milliseconds.
