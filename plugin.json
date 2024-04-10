@@ -1,7 +1,7 @@
 {
     "name": "Event Sequence Timer Plugin",
     "url": "https://github.com/PostHog/event-sequence-timer-plugin",
-    "description": "Time the time taken for a user to perform Event B after performing Event A.",
+    "description": "Deprecated, will be skipped if process_person=false",
     "main": "index.ts",
     "config": [
         {
