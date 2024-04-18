@@ -1,7 +1,7 @@
 {
     "name": "Event Sequence Timer Plugin",
     "url": "https://github.com/PostHog/event-sequence-timer-plugin",
-    "description": "Deprecated, will be skipped if process_person=false",
+    "description": "Deprecated",
     "main": "index.ts",
     "config": [
         {
