@@ -1,6 +1,6 @@
 # Event Sequence Timer Plugin
 
-This plugin is deprecated, it will be skipped in `process_persons=false` mode.
+This plugin is deprecated.
 
 Time the time taken for a user to perform Event B after performing Event A.
 
